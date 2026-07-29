@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install ".[dev,build]"
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Build portable package
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --windowed `
+            --onedir `
+            --name WSLM `
+            --paths src `
+            --distpath dist\onedir `
+            --workpath build\onedir `
+            --specpath build\spec-onedir `
+            launcher.py
+
+      - name: Build single-file package
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --windowed `
+            --onefile `
+            --name WSLM `
+            --paths src `
+            --distpath dist\onefile `
+            --workpath build\onefile `
+            --specpath build\spec-onefile `
+            launcher.py
+
+      - name: Package and verify
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          $zipName = "WSLM-$version-windows-x64.zip"
+          $exeName = "WSLM-$version-windows-x64.exe"
+          $releaseDir = Join-Path $PWD "release"
+          $checkDir = Join-Path $env:RUNNER_TEMP "wslm-release-check"
+
+          New-Item -ItemType Directory -Force $releaseDir | Out-Null
+          Compress-Archive `
+            -Path "dist\onedir\WSLM\*" `
+            -DestinationPath (Join-Path $releaseDir $zipName) `
+            -CompressionLevel Optimal
+          Copy-Item "dist\onefile\WSLM.exe" (Join-Path $releaseDir $exeName)
+
+          Expand-Archive `
+            -Path (Join-Path $releaseDir $zipName) `
+            -DestinationPath $checkDir
+
+          if (-not (Test-Path (Join-Path $checkDir "WSLM.exe"))) {
+            throw "便携包中缺少 WSLM.exe"
+          }
+          if (-not (Test-Path (Join-Path $checkDir "_internal"))) {
+            throw "便携包中缺少 _internal 目录"
+          }
+          if (-not (Test-Path (Join-Path $releaseDir $exeName))) {
+            throw "单文件 EXE 构建失败"
+          }
+
+          $checksumFiles = @($zipName, $exeName)
+          $checksums = foreach ($file in $checksumFiles) {
+            $hash = (Get-FileHash (Join-Path $releaseDir $file) -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $file"
+          }
+          $checksums | Set-Content `
+            -Path (Join-Path $releaseDir "SHA256SUMS.txt") `
+            -Encoding ascii
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            release\WSLM-${{ github.ref_name }}-windows-x64.zip `
+            release\WSLM-${{ github.ref_name }}-windows-x64.exe `
+            release\SHA256SUMS.txt `
+            --verify-tag `
+            --title "WSLM ${{ github.ref_name }}" `
+            --generate-notes
