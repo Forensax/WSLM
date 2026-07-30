@@ -4,17 +4,18 @@ import struct
 
 from PySide6.QtGui import QImage
 
-from wslm.resources import APP_ICON_PATH, LOGO_PATH
+from wslm.resources import APP_ICON_PATH, LOGO_PATH, SMALL_LOGO_PATH
 
 
 def test_logo_is_transparent_1024_png() -> None:
-    image = QImage(str(LOGO_PATH))
+    for path in (LOGO_PATH, SMALL_LOGO_PATH):
+        image = QImage(str(path))
 
-    assert not image.isNull()
-    assert image.width() == 1024
-    assert image.height() == 1024
-    assert image.hasAlphaChannel()
-    assert image.pixelColor(0, 0).alpha() == 0
+        assert not image.isNull()
+        assert image.width() == 1024
+        assert image.height() == 1024
+        assert image.hasAlphaChannel()
+        assert image.pixelColor(0, 0).alpha() == 0
 
 
 def test_icon_contains_required_sizes() -> None:

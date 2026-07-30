@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $PythonPath = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
-$IconPath = Join-Path $ProjectRoot "src\wslm\assets\wslm.ico"
+$IconPath = Join-Path $ProjectRoot "src\wslm\assets\wslm_v1.ico"
 $AssetPath = Join-Path $ProjectRoot "src\wslm\assets"
 
 if (-not (Test-Path -LiteralPath $PythonPath)) {
