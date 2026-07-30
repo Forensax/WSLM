@@ -1,5 +1,9 @@
 # WSLM
 
+<p align="center">
+  <img src="src/wslm/assets/wslm-logo.png" alt="WSLM Logo" width="180">
+</p>
+
 简洁的 Windows WSL 环境管理器。
 
 WSLM 是独立开发的开源项目，与 Microsoft 没有关联或授权关系。

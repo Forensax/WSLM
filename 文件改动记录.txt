@@ -4,3 +4,5 @@ WSLM_v2
 精简 README，统一项目版本，并添加 GitHub Actions 双格式构建和自动发布配置。
 WSLM_v3
 设计多环境企鹅 Logo，接入程序页首、窗口与 EXE 图标，并完善资源打包和自动发布。
+WSLM_v4
+在 GitHub README 顶部居中展示 WSLM Logo，并确认已发布 EXE 的嵌入图标。
