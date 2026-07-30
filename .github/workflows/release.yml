@@ -31,12 +31,17 @@ jobs:
       - name: Build portable package
         shell: pwsh
         run: |
+          $iconPath = Join-Path $PWD "src\wslm\assets\wslm.ico"
+          $assetPath = Join-Path $PWD "src\wslm\assets"
+
           python -m PyInstaller `
             --noconfirm `
             --clean `
             --windowed `
             --onedir `
             --name WSLM `
+            --icon $iconPath `
+            --add-data "$assetPath;wslm\assets" `
             --paths src `
             --distpath dist\onedir `
             --workpath build\onedir `
@@ -46,12 +51,17 @@ jobs:
       - name: Build single-file package
         shell: pwsh
         run: |
+          $iconPath = Join-Path $PWD "src\wslm\assets\wslm.ico"
+          $assetPath = Join-Path $PWD "src\wslm\assets"
+
           python -m PyInstaller `
             --noconfirm `
             --clean `
             --windowed `
             --onefile `
             --name WSLM `
+            --icon $iconPath `
+            --add-data "$assetPath;wslm\assets" `
             --paths src `
             --distpath dist\onefile `
             --workpath build\onefile `

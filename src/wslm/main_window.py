@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from PySide6.QtCore import QThreadPool, QTimer, Qt
-from PySide6.QtGui import QColor, QFont, QPalette
+from PySide6.QtGui import QColor, QFont, QPalette, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from .config import AppConfig, ConfigStore
 from .models import InstalledDistro, OnlineDistro
+from .resources import LOGO_PATH
 from .workers import FunctionWorker
 from .wsl_service import (
     WslCommandError,
@@ -272,8 +273,31 @@ class MainWindow(QMainWindow):
         self._refresh_all()
 
     def _build_ui(self) -> None:
+        logo = QLabel()
+        logo.setFixedSize(36, 36)
+        logo.setAccessibleName("WSLM")
+        logo_pixmap = QPixmap(str(LOGO_PATH))
+        if not logo_pixmap.isNull():
+            logo.setPixmap(
+                logo_pixmap.scaled(
+                    36,
+                    36,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+        else:
+            logo.hide()
+
         title = QLabel("WSL 环境")
         title.setStyleSheet("font-size: 22px; font-weight: 650; color: #111827;")
+
+        title_layout = QHBoxLayout()
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        title_layout.setSpacing(10)
+        title_layout.addWidget(logo)
+        title_layout.addWidget(title)
+        title_layout.addStretch(1)
 
         self.status_label = QLabel("正在读取环境…")
         self.status_label.setStyleSheet("color: #6b7280;")
@@ -320,7 +344,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(content)
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(12)
-        layout.addWidget(title)
+        layout.addLayout(title_layout)
         layout.addWidget(toolbar)
         layout.addWidget(self.progress)
         layout.addWidget(self.table, 1)
